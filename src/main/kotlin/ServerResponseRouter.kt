@@ -38,3 +38,15 @@ class ServerResponseHandler {
 
 @Serializable
 data class SomeBody(@SerialName("user_id") val userId: Int, val name: String)
+
+suspend fun returnBody(request: ServerRequest): ServerResponse {
+    return ServerResponse
+        .ok()
+        // Note: `fun ServerResponse.BodyBuilder.bodyValueAndAwait(body: Any)`
+        // is not a reified function and is subject to type erasure.
+        // In cases where response is a collection, the object is serialized as `Any`,
+        // and the response does not have the proper format, which is unintended.
+        // Actual response: [{"userId":1,"name":"name"}]
+        // Expected response : [{"user_id":1,"name":"name"}]
+        .bodyValueAndAwait(listOf(SomeBody(1, "name")))
+}
